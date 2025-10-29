@@ -1,0 +1,31 @@
+{
+  "name": "personal-dashboard",
+  "version": "1.0.0",
+  "description": "A personal, self-hosted dashboard application designed to bring all my key productivity and learning tools into one place. It runs locally using Docker and Traefik, with a custom backend (Express.js) and frontend. ",
+  "keywords": [
+    "dashboard",
+    "express",
+    "google",
+    "calendar",
+    "API",
+    "github",
+    "productivity",
+    "learning",
+    "coursera"
+  ],
+  "homepage": "https://github.com/fcortesbio/personal-dashboard#readme",
+  "bugs": {
+    "url": "https://github.com/fcortesbio/personal-dashboard/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fcortesbio/personal-dashboard.git"
+  },
+  "license": "MIT",
+  "author": "fcortesbio",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
