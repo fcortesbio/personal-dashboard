@@ -5,9 +5,7 @@ import fs from "node:fs";
 
 // find the /data directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-console.log(__dirname);
 const dbDir = path.join(__dirname, "..", "data");
-console.log(dbDir);
 
 // ensure the /data directory exists before trying to create the DB
 if (!fs.existsSync(dbDir)) {
@@ -19,9 +17,8 @@ if (!fs.existsSync(dbDir)) {
 }
 
 // 1. Initialize the database
-// Passing { verbose: console.log() } allows logging all queries
 const dbPath = path.join(dbDir, "dashboard.db");
-const db = new Database(dbPath, { verbose: console.log() });
+const db = new Database(dbPath, { verbose: console.log });
 
 // 2. Enable WAL mode for better performance
 db.pragma("journal_mode = WAL");
@@ -39,7 +36,7 @@ function createTables() {
 
     CREATE TABLE IF NOT EXISTS links (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,\
+      name TEXT NOT NULL,
       link TEXT NOT NULL
     );
     `,
