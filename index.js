@@ -1,7 +1,7 @@
 import express from "express";
 import morgan from "morgan";
-
-// Route controllers
+import "./db/database.js"; // imports and run DB set up
+import coursesRouter from "./routes/courses.js";
 
 // --- App Configuration ---
 const app = express();
@@ -19,6 +19,9 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
+
+// Courses CRUD endpoints
+app.use("/courses", coursesRouter);
 
 // --- Start Server ---
 app.listen(PORT, () => {

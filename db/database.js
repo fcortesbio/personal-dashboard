@@ -18,7 +18,7 @@ if (!fs.existsSync(dbDir)) {
 
 // 1. Initialize the database
 const dbPath = path.join(dbDir, "dashboard.db");
-const db = new Database(dbPath, { verbose: console.log });
+const db = new Database(dbPath);
 
 // 2. Enable WAL mode for better performance
 db.pragma("journal_mode = WAL");
