@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: .
+    container_name: "dashboard_backend"
+    restart: unless-stopped
+    networks:
+      # Connection to Traefik external network -- see: https://github.com/fcortesbio/traefik-gatekeeper
+      - traefik_proxy
+    volumes:
+      # ensures data persistance -- it links local ./data to /app/data in the container
+      - ./data:/app/data
+    environment:
+      - GITHUB_PAT=${GITHUB_PAT} # from .env file
+    labels:
+      # -- Traefik routing rules --
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard-api.rule=Host(`dashboard.localhost`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.dashboard-api.entrypoint=web"
+      - "traefik.http.services.dashboard-api-service.loadbalancer.server.port=3000"
+
+networks:
+  traefik_proxy:
+    external: true
