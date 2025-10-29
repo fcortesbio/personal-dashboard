@@ -36,7 +36,8 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "googleapis": "^164.1.0",
-    "morgan": "^1.10.1"
+    "morgan": "^1.10.1",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "eslint": "^9.38.0",

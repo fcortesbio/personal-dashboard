@@ -1,0 +1,272 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Personal Dashboard API",
+    "description": "API for managing courses, links, and productivity data",
+    "version": "1.0.0",
+    "contact": {
+      "name": "fcortesbio",
+      "url": "https://github.com/fcortesbio/personal-dashboard"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development server"
+    }
+  ],
+  "paths": {
+    "/courses": {
+      "post": {
+        "summary": "Create a new course",
+        "tags": ["Courses"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourseInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Course created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Course"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required field (name)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all courses",
+        "tags": ["Courses"],
+        "responses": {
+          "200": {
+            "description": "List of all courses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Course"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/{id}": {
+      "get": {
+        "summary": "Get a course by ID",
+        "tags": ["Courses"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Course"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a course",
+        "tags": ["Courses"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourseUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Course updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Course"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a course",
+        "tags": ["Courses"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Course deleted successfully"
+          },
+          "404": {
+            "description": "Course not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Course": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique course identifier",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Course name",
+            "example": "Amazon Junior Software Developer with GenAI"
+          },
+          "current_module": {
+            "type": "string",
+            "nullable": true,
+            "description": "Name of the current module being studied",
+            "example": "Exploring conditional statements"
+          },
+          "link": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL to the course or current module",
+            "example": "https://www.coursera.org/learn/introduction-to-software-development/lecture/GJXyy/exploring-conditional-statements"
+          }
+        }
+      },
+      "CourseInput": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Course name",
+            "example": "Amazon Junior Software Developer with GenAI"
+          },
+          "current_module": {
+            "type": "string",
+            "description": "Name of the current module being studied",
+            "example": "Exploring conditional statements"
+          },
+          "link": {
+            "type": "string",
+            "description": "URL to the course or current module",
+            "example": "https://www.coursera.org/learn/introduction-to-software-development/lecture/GJXyy/exploring-conditional-statements"
+          }
+        }
+      },
+      "CourseUpdate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Course name",
+            "example": "Amazon Junior Software Developer with GenAI"
+          },
+          "current_module": {
+            "type": "string",
+            "description": "Name of the current module being studied",
+            "example": "Exploring conditional statements"
+          },
+          "link": {
+            "type": "string",
+            "description": "URL to the course or current module",
+            "example": "https://www.coursera.org/learn/introduction-to-software-development/lecture/GJXyy/exploring-conditional-statements"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Course not found"
+          }
+        }
+      }
+    }
+  }
+}
