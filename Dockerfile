@@ -1,23 +1,39 @@
-# Node.js version
-FROM node:25-alpine3.21
+# --- Stage 1: The "Builder" ---
+# Use the alpine image, but we'll add the build tools
+FROM node:25-alpine AS builder
 
-# set working directory
+# Install the C++ build tools *only in this stage*
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
-# Copy package.json
-COPY package*.json ./
+# Copy package files
+COPY package.json package-lock.json ./
 
-# Install **only** production dependencies
+# Install *only* production dependencies
+# This will correctly compile sqlite3/better-sqlite3
 RUN npm install --production
 
-# Copy application files
+# Copy the rest of your app code
 COPY . .
 
-# Create a directory for SQLite database
+# --- Stage 2: The "Final" Image ---
+# Start from a clean, minimal alpine image
+FROM node:25-alpine
+
+WORKDIR /app
+
+# Copy *only* the compiled production node_modules from the "builder" stage
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy your app code from the "builder" stage
+COPY --from=builder /app ./
+
+# Create the directory for the persistent database
 RUN mkdir -p /app/data
 
-# Expose the internal port (used by Traefik)
+# Expose the port your app runs on
 EXPOSE 3000
 
-# The command to run the application
-CMD [ "npm", "start" ]
+# Run the main server entry point
+CMD [ "node", "index.js" ]
