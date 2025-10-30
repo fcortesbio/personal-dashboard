@@ -10,7 +10,9 @@ services:
       # ensures data persistance -- it links local ./data to /app/data in the container
       - ./data:/app/data
     environment:
-      - GITHUB_PAT=${GITHUB_PAT} # from .env file
+      - PORT=3000
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_USERNAME=${GITHUB_USERNAME}
     labels:
       # -- Traefik routing rules --
       - "traefik.enable=true"
