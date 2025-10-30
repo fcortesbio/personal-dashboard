@@ -14,14 +14,16 @@ A self-hosted productivity dashboard backend that consolidates key tools and inf
 - **Test Suite** - 100% isolated test database, comprehensive coverage
 - **OpenAPI Documentation** - Auto-generated Swagger UI at `/api-docs`
 
-### 🔄 Phase 2 (Planned)
-- **Google OAuth 2.0** - Secure authentication flow
-- **Token Management** - Secure refresh token storage
+### 🔄 Phase 2 (In Progress)
+- **Google OAuth 2.0** - Secure authentication flow for Google Calendar/Tasks
+- **Token Management** - Secure refresh token storage in SQLite
+- **Google Calendar API** - Fetch upcoming events
+- **Google Tasks API** - View, create, and complete tasks
+- **Automatic Token Refresh** - Transparent token refresh with redirect to login on expiration
 
 ### 📋 Phase 3 (Planned)  
-- **Google Tasks API** - Fetch and create tasks
-- **Google Calendar API** - Weekly calendar overview
 - **Frontend** - React/Vue dashboard interface
+- **Enhanced Dashboard** - Visual calendar and task management UI
 
 ## Quick Start
 
@@ -114,6 +116,50 @@ Fetch user repositories:
 }
 ```
 
+### 🔐 Google OAuth (Phase 2)
+Authentication endpoints for Google Calendar and Tasks integration:
+
+- **GET** `/auth/google/login` - Initiates Google OAuth flow, redirects to consent screen
+- **GET** `/auth/google/callback` - OAuth callback handler, stores tokens in database
+- **POST** `/auth/google/refresh` - Manually refresh access token
+
+### 📅 Google Calendar (Phase 2)
+Fetch upcoming calendar events:
+
+- **GET** `/calendar?days=7` - Get upcoming events (default: next 7 days)
+
+**Response:**
+```json
+{
+  "events": [
+    {
+      "id": "event123",
+      "summary": "Team Meeting",
+      "start": "2025-10-30T14:00:00Z",
+      "end": "2025-10-30T15:00:00Z",
+      "description": "Weekly sync"
+    }
+  ],
+  "fetched_at": "2025-10-30T18:00:00Z"
+}
+```
+
+### ✅ Google Tasks (Phase 2)
+Manage Google Tasks directly from the dashboard:
+
+- **GET** `/tasks` - List all tasks
+- **POST** `/tasks` - Create a new task
+- **PATCH** `/tasks/:id` - Mark task as complete
+
+**Create Task Example:**
+```json
+{
+  "title": "Review pull requests",
+  "notes": "Check pending PRs on dashboard project",
+  "dueDate": "2025-10-31"
+}
+```
+
 ## API Documentation
 
 Interactive API docs available at: **http://localhost:3000/api-docs**
@@ -130,9 +176,20 @@ NODE_ENV=development
 # GitHub API (optional - for private repos)
 GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxx
 GITHUB_USERNAME=fcortesbio
+
+# Google OAuth 2.0 (Phase 2 - for Calendar/Tasks API)
+GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_client_secret
+GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
 ```
 
 **GitHub Token:** Only needed for private repositories. Public repos work without authentication.
+
+**Google OAuth:** Required for Phase 2 features. Set up at [Google Cloud Console](https://console.cloud.google.com/):
+1. Create a new project
+2. Enable Google Calendar API and Google Tasks API
+3. Create OAuth 2.0 credentials (Desktop app type)
+4. Add authorized redirect URI matching `GOOGLE_REDIRECT_URI`
 
 ## Testing
 
@@ -189,6 +246,13 @@ node tests/github.test.js
 - `id` - PRIMARY KEY
 - `name` - Bookmark name (required)
 - `link` - Bookmark URL
+
+**auth_tokens** (Phase 2)
+- `id` - PRIMARY KEY
+- `access_token` - Google OAuth access token
+- `refresh_token` - Google OAuth refresh token
+- `expires_at` - Token expiration timestamp
+- `created_at` - Token creation timestamp
 
 ## Development
 
