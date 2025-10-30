@@ -51,6 +51,8 @@ function teardown() {
 
 // ===== TESTS =====
 
+console.log("ℹ  Using isolated in-memory test database (production data safe)\n");
+
 setup();
 
 test("CREATE: should insert a new course", () => {

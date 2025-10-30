@@ -46,7 +46,10 @@ function createTables() {
 // Run setup immediately
 try {
   createTables();
-  console.log(`Connected to the SQLite database at ${dbPath}`);
+  // Only log connection if not running tests (NODE_ENV would be set by test runner if needed)
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(`Connected to the SQLite database at ${dbPath}`);
+  }
 } catch (err) {
   console.error("Error connecting to SQLite: ", err);
 }
