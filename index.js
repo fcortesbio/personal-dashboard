@@ -5,6 +5,7 @@ import swaggerJsdoc from "swagger-jsdoc";
 import "./db/database.js"; // imports and run DB set up
 import coursesRouter from "./routes/courses.js";
 import bookmarksRouter from "./routes/bookmarks.js";
+import githubRouter from "./routes/github.js";
 import { swaggerOptions } from "./docs/swaggerConfig.js";
 
 // Generate OpenAPI spec dynamically from JSDoc comments
@@ -35,6 +36,9 @@ app.use("/courses", coursesRouter);
 
 // Bookmarks CRUD endpoints
 app.use("/bookmarks", bookmarksRouter);
+
+// GitHub repositories endpoint
+app.use("/github", githubRouter);
 
 // --- Start Server ---
 app.listen(PORT, () => {
