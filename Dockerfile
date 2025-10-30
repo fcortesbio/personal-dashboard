@@ -32,8 +32,8 @@ COPY --from=builder /app ./
 # Create the directory for the persistent database
 RUN mkdir -p /app/data
 
-# Expose the port your app runs on
-EXPOSE 3000
+# Expose the port your app runs on (production)
+EXPOSE 4000
 
 # Run the main server entry point
 CMD [ "node", "index.js" ]

@@ -27,8 +27,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
-    "dev:watch": "nodemon index.js --watch index.js",
+    "dev": "nodemon --exec 'node --env-file=.env.dev' index.js",
+    "dev:watch": "nodemon --exec 'node --env-file=.env.dev' index.js --watch index.js",
     "test": "NODE_ENV=test node tests/courses.test.js && NODE_ENV=test node tests/bookmarks.test.js && node tests/github.test.js"
   },
   "dependencies": {

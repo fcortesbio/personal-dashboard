@@ -28,8 +28,9 @@ A self-hosted productivity dashboard backend that consolidates key tools and inf
 ### Prerequisites
 - Node.js 18+ (for native `fetch` support)
 - npm or yarn
+- Docker & Docker Compose (for containerized deployment)
 
-### Installation
+### Local Development
 
 ```bash
 # Clone the repository
@@ -39,17 +40,18 @@ cd personal-dashboard
 # Install dependencies
 npm install
 
-# Copy environment template (optional for GitHub features)
-cp .env.example .env
+# Create development environment file
+cp .env.example .env.dev
+# Edit .env.dev and add your credentials
 
 # Run tests
 npm test
 
-# Start development server
+# Start development server (runs on port 4001)
 npm run dev
 ```
 
-Server runs on `http://localhost:3000`
+Development server runs on `http://localhost:4001`
 
 ## API Endpoints
 
@@ -211,13 +213,59 @@ Following conventional commits:
 
 ## Deployment
 
-### Docker (Coming Soon)
-```bash
-# Build image
-docker build -t personal-dashboard .
+### Docker with Traefik
 
-# Run container
-docker run -p 3000:3000 -v $(pwd)/data:/app/data personal-dashboard
+This project is configured to run with Docker and Traefik as a reverse proxy.
+
+#### Prerequisites
+- Docker and Docker Compose installed
+- Traefik container running on the `traefik_proxy` network
+- `/etc/hosts` configured with the dashboard hostname
+
+#### Setup Instructions
+
+1. **Configure `/etc/hosts`** to resolve the dashboard hostname:
+   ```bash
+   # Add this line to /etc/hosts
+   127.0.0.1 dashboard
+   ```
+   On Linux/macOS, edit with: `sudo nano /etc/hosts`
+
+2. **Create production environment file:**
+   ```bash
+   cp .env.example .env
+   # Edit .env and add your GitHub credentials and desired port
+   ```
+
+3. **Start the container:**
+   ```bash
+   docker compose up -d
+   ```
+
+4. **Access the API:**
+   - Direct access: `http://localhost:4000/health`
+   - Via Traefik: `http://dashboard/health`
+   - API Documentation: `http://dashboard/api-docs`
+
+#### Configuration
+- The container exposes port 4000 (configurable via `.env` PORT variable)
+- Traefik routes all traffic from `http://dashboard/` to the backend
+- Data persists in `./data/` volume
+- Logs are accessible via: `docker compose logs -f dashboard_backend`
+
+#### Useful Commands
+```bash
+# View logs
+docker compose logs -f dashboard_backend
+
+# Stop containers
+docker compose down
+
+# Rebuild after code changes
+docker compose up -d --build
+
+# Remove volumes (clears database)
+docker compose down -v
 ```
 
 ### Manual Deployment

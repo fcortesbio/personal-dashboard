@@ -14,9 +14,12 @@ const openAPISpec = swaggerJsdoc(swaggerOptions);
 // --- App Configuration ---
 const app = express();
 const PORT = process.env.PORT ?? 3000;
+const ENV = process.env.ENV ?? "production";
+const isDev = ENV === "development";
 
 // --- Middleware ---
-app.use(morgan("short")); // Logger
+const morganFormat = isDev ? "combined" : "short";
+app.use(morgan(morganFormat)); // Logger
 app.use(express.json()); // JSON body parser for POST/PUT request
 
 // --- API Routes ---
@@ -42,5 +45,6 @@ app.use("/github", githubRouter);
 
 // --- Start Server ---
 app.listen(PORT, () => {
-  console.log("Backend server running on http://localhost:" + PORT);
+  const mode = isDev ? "DEVELOPMENT" : "PRODUCTION";
+  console.log(`[${mode}] Backend server running on http://localhost:${PORT}`);
 });
