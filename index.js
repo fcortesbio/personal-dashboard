@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import "./db/database.js"; // imports and run DB set up
 import coursesRouter from "./routes/courses.js";
+import bookmarksRouter from "./routes/bookmarks.js";
 
 // Load OpenAPI spec
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -34,6 +35,9 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openAPISpec));
 
 // Courses CRUD endpoints
 app.use("/courses", coursesRouter);
+
+// Bookmarks CRUD endpoints
+app.use("/bookmarks", bookmarksRouter);
 
 // --- Start Server ---
 app.listen(PORT, () => {
