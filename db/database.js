@@ -34,10 +34,10 @@ function createTables() {
       link TEXT
     );
 
-    CREATE TABLE IF NOT EXISTS links (
+    CREATE TABLE IF NOT EXISTS bookmarks (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      link TEXT NOT NULL
+      link TEXT
     );
     `,
   );

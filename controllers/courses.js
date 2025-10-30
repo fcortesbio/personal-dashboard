@@ -1,12 +1,13 @@
-import db from "../db/database.js";
+import dbDefault from "../db/database.js";
 
 /**
  * Create a new course
  * @param {Object} course - Course object with name, current_module, link
+ * @param {Database} [db] - Optional database instance (for testing)
  * @returns {Object} - Created course with id
  * @throws {Error} - If name is missing
  */
-export function createCourse(course) {
+export function createCourse(course, db = dbDefault) {
   if (!course.name) {
     throw new Error("Course must have a name field");
   }
@@ -27,18 +28,20 @@ export function createCourse(course) {
 /**
  * Get a single course by ID
  * @param {number} id - Course ID
+ * @param {Database} [db] - Optional database instance (for testing)
  * @returns {Object|null} - Course object or null if not found
  */
-export function getCourse(id) {
+export function getCourse(id, db = dbDefault) {
   const stmt = db.prepare("SELECT * FROM courses WHERE id = ?");
   return stmt.get(id) || null;
 }
 
 /**
  * Get all courses
+ * @param {Database} [db] - Optional database instance (for testing)
  * @returns {Array} - Array of all courses
  */
-export function getAllCourses() {
+export function getAllCourses(db = dbDefault) {
   const stmt = db.prepare("SELECT * FROM courses");
   return stmt.all();
 }
@@ -47,11 +50,12 @@ export function getAllCourses() {
  * Update a course
  * @param {number} id - Course ID
  * @param {Object} updates - Fields to update (name, current_module, link)
+ * @param {Database} [db] - Optional database instance (for testing)
  * @returns {Object|null} - Updated course or null if not found
  */
-export function updateCourse(id, updates) {
+export function updateCourse(id, updates, db = dbDefault) {
   // Check if course exists
-  const existing = getCourse(id);
+  const existing = getCourse(id, db);
   if (!existing) {
     return null;
   }
@@ -82,16 +86,17 @@ export function updateCourse(id, updates) {
   const stmt = db.prepare(query);
   stmt.run(...values);
 
-  return getCourse(id);
+  return getCourse(id, db);
 }
 
 /**
  * Delete a course
  * @param {number} id - Course ID
+ * @param {Database} [db] - Optional database instance (for testing)
  * @returns {boolean} - True if deleted, false if not found
  */
-export function deleteCourse(id) {
-  const existing = getCourse(id);
+export function deleteCourse(id, db = dbDefault) {
+  const existing = getCourse(id, db);
   if (!existing) {
     return false;
   }

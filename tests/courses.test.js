@@ -1,11 +1,21 @@
-import db from "../db/database.js";
+import createTestDatabase from "../db/test-database.js";
 import {
-  createCourse,
-  getCourse,
-  getAllCourses,
-  updateCourse,
-  deleteCourse,
+  createCourse as createCourseController,
+  getCourse as getCourseController,
+  getAllCourses as getAllCoursesController,
+  updateCourse as updateCourseController,
+  deleteCourse as deleteCourseController,
 } from "../controllers/courses.js";
+
+// Create isolated test database
+const db = createTestDatabase();
+
+// Wrap controller functions to use test database
+const createCourse = (course) => createCourseController(course, db);
+const getCourse = (id) => getCourseController(id, db);
+const getAllCourses = () => getAllCoursesController(db);
+const updateCourse = (id, updates) => updateCourseController(id, updates, db);
+const deleteCourse = (id) => deleteCourseController(id, db);
 
 // test helper
 const assert = (condition, message) => {
@@ -29,13 +39,14 @@ const test = (name, fn) => {
   }
 };
 
-// Setup: Clear courses table before tests
+// No setup/teardown needed - fresh database for each test run
 function setup() {
-  db.prepare("DELETE FROM courses").run();
+  // Database is already empty (in-memory)
 }
 
 function teardown() {
-  db.prepare("DELETE FROM courses").run();
+  // No need to clear - database is destroyed after tests
+  db.close();
 }
 
 // ===== TESTS =====
@@ -91,12 +102,14 @@ test("READ: should return null for non-existent course", () => {
 });
 
 test("READ: should get all courses", () => {
-  setup();
+  const countBefore = getAllCourses().length;
   createCourse({ name: "Course 1", current_module: "Module 1", link: "url1" });
   createCourse({ name: "Course 2", current_module: "Module 2", link: "url2" });
 
   const all = getAllCourses();
-  assertEquals(all.length, 2, "Should return 2 courses");
+  assertEquals(all.length, countBefore + 2, "Should return newly created courses plus any prior data");
+  assert(all.some(c => c.name === "Course 1"), "Course 1 should be in results");
+  assert(all.some(c => c.name === "Course 2"), "Course 2 should be in results");
 });
 
 test("UPDATE: should update a course", () => {

@@ -29,7 +29,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "dev:watch": "nodemon index.js --watch index.js",
-    "test": "node tests/courses.test.js"
+    "test": "node tests/courses.test.js && node tests/bookmarks.test.js"
   },
   "dependencies": {
     "better-sqlite3": "^11.10.0",
