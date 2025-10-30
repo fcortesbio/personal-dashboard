@@ -1,17 +1,14 @@
 import express from "express";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
-import { readFileSync } from "fs";
-import { fileURLToPath } from "node:url";
-import path from "node:path";
+import swaggerJsdoc from "swagger-jsdoc";
 import "./db/database.js"; // imports and run DB set up
 import coursesRouter from "./routes/courses.js";
 import bookmarksRouter from "./routes/bookmarks.js";
+import { swaggerOptions } from "./docs/swaggerConfig.js";
 
-// Load OpenAPI spec
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const openAPIPath = path.join(__dirname, "docs", "openapi.json");
-const openAPISpec = JSON.parse(readFileSync(openAPIPath, "utf-8"));
+// Generate OpenAPI spec dynamically from JSDoc comments
+const openAPISpec = swaggerJsdoc(swaggerOptions);
 
 // --- App Configuration ---
 const app = express();
