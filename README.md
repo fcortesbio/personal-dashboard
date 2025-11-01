@@ -43,18 +43,18 @@ cd personal-dashboard
 # Install dependencies
 npm install
 
-# Create development environment file
-cp .env.example .env.dev
-# Edit .env.dev and add your credentials
+# Create environment file
+cp .env.example .env
+# Edit .env and add your GitHub/Google OAuth credentials
 
 # Run tests
 npm test
 
-# Start development server (runs on port 4001)
+# Start development server
 npm run dev
 ```
 
-Development server runs on `http://localhost:4001`
+Development server runs on `http://localhost:3000` (configurable via `PORT` env var)
 
 ## API Endpoints
 
@@ -158,7 +158,7 @@ Manage Google Tasks directly from the dashboard:
 
 **Create Task Example:**
 ```bash
-curl -X POST http://localhost:4001/tasks \
+curl -X POST http://localhost:3000/tasks \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Review pull requests",
@@ -168,16 +168,20 @@ curl -X POST http://localhost:4001/tasks \
 
 **Mark Task Complete:**
 ```bash
-curl -X PATCH http://localhost:4001/tasks/:id \
+curl -X PATCH http://localhost:3000/tasks/:id \
   -H "Content-Type: application/json" \
   -d '{"completed": true}'
 ```
 
 ## API Documentation
 
-Interactive API docs available at: **http://localhost:3000/api-docs**
+**Interactive Swagger UI:** http://localhost:3000/api-docs
 
-Auto-generated from JSDoc comments using swagger-jsdoc and Swagger UI.
+**Full API Reference:** See `docs/API.md` for comprehensive endpoint documentation
+
+**Docker Deployment Guide:** See `docs/DOCKER.md`
+
+APIs are auto-generated from JSDoc comments using swagger-jsdoc.
 
 ## Environment Variables
 
@@ -255,7 +259,8 @@ node tests/github.test.js
 ├── docs/                 # API documentation
 │   ├── swaggerConfig.js  # Swagger setup
 │   ├── schemas.js        # OpenAPI schemas
-│   └── API.md            # Phase 2 API documentation
+│   ├── DOCKER.md         # Docker deployment guide
+│   └── API.md            # Phase 2 API reference
 └── data/                 # SQLite database files
 ```
 
@@ -325,7 +330,7 @@ This project is configured to run with Docker and Traefik as a reverse proxy.
 2. **Create production environment file:**
    ```bash
    cp .env.example .env
-   # Edit .env and add your GitHub credentials and desired port
+   # Edit .env and add your GitHub/Google OAuth credentials
    ```
 
 3. **Start the container:**
@@ -334,12 +339,12 @@ This project is configured to run with Docker and Traefik as a reverse proxy.
    ```
 
 4. **Access the API:**
-   - Direct access: `http://localhost:4000/health`
+   - Direct access: `http://localhost:3000/health`
    - Via Traefik: `http://dashboard.localhost/health`
    - API Documentation: `http://dashboard.localhost/api-docs`
 
 #### Configuration
-- The container exposes port 4000 (configurable via `.env` PORT variable)
+- The container exposes port 3000 (configurable via `.env` PORT variable)
 - Traefik routes all traffic from `http://dashboard/` to the backend
 - Data persists in `./data/` volume
 - Logs are accessible via: `docker compose logs -f dashboard_backend`
