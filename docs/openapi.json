@@ -11,8 +11,12 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000",
+      "url": "http://localhost:3001",
       "description": "Development server"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Production server"
     }
   ],
   "paths": {
@@ -185,6 +189,259 @@
           }
         }
       }
+    },
+    "/bookmarks": {
+      "post": {
+        "summary": "Create a new bookmark",
+        "tags": ["Bookmarks"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookmarkInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bookmark created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bookmark"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required field (name)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all bookmarks",
+        "tags": ["Bookmarks"],
+        "responses": {
+          "200": {
+            "description": "List of all bookmarks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Bookmark"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookmarks/{id}": {
+      "get": {
+        "summary": "Get a bookmark by ID",
+        "tags": ["Bookmarks"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bookmark found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bookmark"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bookmark not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a bookmark",
+        "tags": ["Bookmarks"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookmarkUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bookmark updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bookmark"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bookmark not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a bookmark",
+        "tags": ["Bookmarks"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Bookmark deleted successfully"
+          },
+          "404": {
+            "description": "Bookmark not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/github": {
+      "get": {
+        "summary": "Get GitHub repositories for a user",
+        "tags": ["GitHub"],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "fcortesbio",
+            "description": "GitHub username"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 5
+            },
+            "example": 5,
+            "description": "Maximum number of repositories to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of user's repositories with profile URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "GitHub user not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "GitHub API rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "GitHub API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -255,6 +512,114 @@
             "type": "string",
             "description": "URL to the course or current module",
             "example": "https://www.coursera.org/learn/introduction-to-software-development/lecture/GJXyy/exploring-conditional-statements"
+          }
+        }
+      },
+      "Bookmark": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique bookmark identifier",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Bookmark name",
+            "example": "GitHub"
+          },
+          "link": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL to the bookmark",
+            "example": "https://github.com"
+          }
+        }
+      },
+      "BookmarkInput": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Bookmark name",
+            "example": "GitHub"
+          },
+          "link": {
+            "type": "string",
+            "description": "URL to the bookmark",
+            "example": "https://github.com"
+          }
+        }
+      },
+      "BookmarkUpdate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Bookmark name",
+            "example": "GitHub"
+          },
+          "link": {
+            "type": "string",
+            "description": "URL to the bookmark",
+            "example": "https://github.com"
+          }
+        }
+      },
+      "GitHubResponse": {
+        "type": "object",
+        "properties": {
+          "profile_url": {
+            "type": "string",
+            "description": "URL to the user's GitHub profile",
+            "example": "https://github.com/fcortesbio"
+          },
+          "repositories": {
+            "type": "array",
+            "description": "List of repositories",
+            "items": {
+              "$ref": "#/components/schemas/GitHubRepository"
+            }
+          }
+        }
+      },
+      "GitHubRepository": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Repository name",
+            "example": "personal-dashboard"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to the repository",
+            "example": "https://github.com/fcortesbio/personal-dashboard"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Repository description",
+            "example": "A personal dashboard application"
+          },
+          "stars": {
+            "type": "integer",
+            "description": "Number of stars",
+            "example": 42
+          },
+          "language": {
+            "type": "string",
+            "nullable": true,
+            "description": "Primary programming language",
+            "example": "JavaScript"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last updated timestamp",
+            "example": "2024-01-15T10:30:00Z"
           }
         }
       },

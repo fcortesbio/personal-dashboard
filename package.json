@@ -29,18 +29,21 @@
     "start": "node index.js",
     "dev": "nodemon --exec 'node --env-file=.env.dev' index.js",
     "dev:watch": "nodemon --exec 'node --env-file=.env.dev' index.js --watch index.js",
+    "lint": "eslint . --fix",
     "test": "NODE_ENV=test node tests/courses.test.js && NODE_ENV=test node tests/bookmarks.test.js && node tests/github.test.js"
   },
   "dependencies": {
     "better-sqlite3": "^11.10.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "google-auth-library": "^9.14.1",
     "googleapis": "^164.1.0",
     "morgan": "^1.10.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.38.0",
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",

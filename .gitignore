@@ -30,3 +30,4 @@ yarn-error.log*
 # Runtime files
 .nodemon.json
 .env.dev
+client_secret_*.json

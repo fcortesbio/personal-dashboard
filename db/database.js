@@ -39,6 +39,14 @@ function createTables() {
       name TEXT NOT NULL,
       link TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS auth_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      access_token TEXT NOT NULL,
+      refresh_token TEXT NOT NULL,
+      expires_at INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
     `,
   );
 }

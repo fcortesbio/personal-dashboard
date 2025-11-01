@@ -2,7 +2,7 @@
 
 A self-hosted productivity dashboard backend that consolidates key tools and information into a unified API. Built with Node.js/Express.js, SQLite, and comprehensive test coverage.
 
-**Status:** Phase 1 Complete ✅ - Core backend and 3/5 widgets functional.
+**Status:** Phase 2 Complete ✅ - Google OAuth, Calendar & Tasks APIs fully integrated and tested.
 
 ## Features
 
@@ -14,16 +14,17 @@ A self-hosted productivity dashboard backend that consolidates key tools and inf
 - **Test Suite** - 100% isolated test database, comprehensive coverage
 - **OpenAPI Documentation** - Auto-generated Swagger UI at `/api-docs`
 
-### 🔄 Phase 2 (In Progress)
-- **Google OAuth 2.0** - Secure authentication flow for Google Calendar/Tasks
-- **Token Management** - Secure refresh token storage in SQLite
-- **Google Calendar API** - Fetch upcoming events
-- **Google Tasks API** - View, create, and complete tasks
-- **Automatic Token Refresh** - Transparent token refresh with redirect to login on expiration
+### ✅ Phase 2 Complete
+- **Google OAuth 2.0** - Secure authentication flow with automatic token refresh
+- **Token Management** - SQLite token storage with 5-minute expiration buffer
+- **Google Calendar API** - Fetch upcoming events with configurable time range
+- **Google Tasks API** - Full task management (list, create, complete, delete)
+- **Protected Endpoints** - Authentication middleware for all Google API routes
+- **Error Handling** - Comprehensive logging and user-friendly error messages
 
 ### 📋 Phase 3 (Planned)  
 - **Frontend** - React/Vue dashboard interface
-- **Enhanced Dashboard** - Visual calendar and task management UI
+- **Dashboard UI** - Visual calendar and task management interface
 
 ## Quick Start
 
@@ -116,19 +117,19 @@ Fetch user repositories:
 }
 ```
 
-### 🔐 Google OAuth (Phase 2)
+### 🔐 Google OAuth
 Authentication endpoints for Google Calendar and Tasks integration:
 
-- **GET** `/auth/google/login` - Initiates Google OAuth flow, redirects to consent screen
-- **GET** `/auth/google/callback` - OAuth callback handler, stores tokens in database
-- **POST** `/auth/google/refresh` - Manually refresh access token
+- **GET** `/auth/google/login` - Initiates Google OAuth flow
+- **GET** `/auth/google/callback` - OAuth callback handler (redirect URI)
+- **GET** `/auth/status` - Check current authentication status
 
-### 📅 Google Calendar (Phase 2)
+### 📅 Google Calendar
 Fetch upcoming calendar events:
 
-- **GET** `/calendar?days=7` - Get upcoming events (default: next 7 days)
+- **GET** `/calendar?days=7` - Get upcoming events (default: next 7 days, range: 1-365)
 
-**Response:**
+**Response Example:**
 ```json
 {
   "events": [
@@ -137,27 +138,39 @@ Fetch upcoming calendar events:
       "summary": "Team Meeting",
       "start": "2025-10-30T14:00:00Z",
       "end": "2025-10-30T15:00:00Z",
-      "description": "Weekly sync"
+      "description": "Weekly sync",
+      "location": "Conference Room A"
     }
   ],
-  "fetched_at": "2025-10-30T18:00:00Z"
+  "count": 1,
+  "days": 7,
+  "fetched_at": "2025-10-31T09:37:00Z"
 }
 ```
 
-### ✅ Google Tasks (Phase 2)
+### ✅ Google Tasks
 Manage Google Tasks directly from the dashboard:
 
-- **GET** `/tasks` - List all tasks
+- **GET** `/tasks` - List all tasks (shows 100 most recent)
 - **POST** `/tasks` - Create a new task
-- **PATCH** `/tasks/:id` - Mark task as complete
+- **PATCH** `/tasks/:id` - Mark task complete/incomplete
+- **DELETE** `/tasks/:id` - Delete a task
 
 **Create Task Example:**
-```json
-{
-  "title": "Review pull requests",
-  "notes": "Check pending PRs on dashboard project",
-  "dueDate": "2025-10-31"
-}
+```bash
+curl -X POST http://localhost:4001/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Review pull requests",
+    "notes": "Check pending PRs on dashboard project"
+  }'
+```
+
+**Mark Task Complete:**
+```bash
+curl -X PATCH http://localhost:4001/tasks/:id \
+  -H "Content-Type: application/json" \
+  -d '{"completed": true}'
 ```
 
 ## API Documentation
@@ -209,18 +222,29 @@ node tests/github.test.js
 - ✅ Courses: 9 tests (CRUD operations, validation)
 - ✅ Bookmarks: 11 tests (CRUD operations, validation)
 - ✅ GitHub: 8 tests (API integration, error handling)
+- ✅ OAuth: Integration tested with actual Google APIs
+- ✅ Calendar: Integration tested with Google Calendar API
+- ✅ Tasks: Full CRUD tested with Google Tasks API
 
 ## Project Structure
 
 ```
 ├── controllers/          # Business logic
-│   ├── courses.js        # Course management  
+│   ├── courses.js        # Course management
 │   ├── bookmarks.js      # Bookmark management
-│   └── github.js         # GitHub API integration
+│   ├── github.js         # GitHub API integration
+│   ├── auth.js           # Google OAuth 2.0 (Phase 2)
+│   ├── calendar.js       # Google Calendar API (Phase 2)
+│   └── tasks.js          # Google Tasks API (Phase 2)
 ├── routes/               # Express route handlers
 │   ├── courses.js        # Course endpoints
 │   ├── bookmarks.js      # Bookmark endpoints
-│   └── github.js         # GitHub endpoints
+│   ├── github.js         # GitHub endpoints
+│   ├── auth.js           # OAuth endpoints (Phase 2)
+│   ├── calendar.js       # Calendar endpoints (Phase 2)
+│   └── tasks.js          # Tasks endpoints (Phase 2)
+├── middleware/           # Express middleware
+│   └── auth.js           # Authentication middleware (Phase 2)
 ├── db/                   # Database setup
 │   ├── database.js       # Production SQLite setup
 │   └── test-database.js  # Test database factory
@@ -230,7 +254,8 @@ node tests/github.test.js
 │   └── github.test.js    # GitHub API tests
 ├── docs/                 # API documentation
 │   ├── swaggerConfig.js  # Swagger setup
-│   └── schemas.js        # OpenAPI schemas
+│   ├── schemas.js        # OpenAPI schemas
+│   └── API.md            # Phase 2 API documentation
 └── data/                 # SQLite database files
 ```
 
@@ -247,11 +272,11 @@ node tests/github.test.js
 - `name` - Bookmark name (required)
 - `link` - Bookmark URL
 
-**auth_tokens** (Phase 2)
+**auth_tokens**
 - `id` - PRIMARY KEY
-- `access_token` - Google OAuth access token
-- `refresh_token` - Google OAuth refresh token
-- `expires_at` - Token expiration timestamp
+- `access_token` - Google OAuth access token (auto-refreshed)
+- `refresh_token` - Google OAuth refresh token (persisted)
+- `expires_at` - Token expiration timestamp (milliseconds)
 - `created_at` - Token creation timestamp
 
 ## Development
@@ -288,12 +313,14 @@ This project is configured to run with Docker and Traefik as a reverse proxy.
 
 #### Setup Instructions
 
-1. **Configure `/etc/hosts`** to resolve the dashboard hostname:
+1. **Configure `/etc/hosts`** to resolve the dashboard hostname (optional for Traefik):
    ```bash
-   # Add this line to /etc/hosts
-   127.0.0.1 dashboard
+   # Add this line to /etc/hosts (optional - Traefik handles dashboard.localhost)
+   127.0.0.1 dashboard.localhost
    ```
    On Linux/macOS, edit with: `sudo nano /etc/hosts`
+   
+   Note: Traefik can resolve `dashboard.localhost` without `/etc/hosts` configuration
 
 2. **Create production environment file:**
    ```bash
@@ -308,8 +335,8 @@ This project is configured to run with Docker and Traefik as a reverse proxy.
 
 4. **Access the API:**
    - Direct access: `http://localhost:4000/health`
-   - Via Traefik: `http://dashboard/health`
-   - API Documentation: `http://dashboard/api-docs`
+   - Via Traefik: `http://dashboard.localhost/health`
+   - API Documentation: `http://dashboard.localhost/api-docs`
 
 #### Configuration
 - The container exposes port 4000 (configurable via `.env` PORT variable)
@@ -353,4 +380,9 @@ MIT License - see LICENSE file for details.
 
 ---
 
-**Next Phase:** Google OAuth 2.0 integration for Tasks and Calendar APIs.
+**Current Status:** All Phase 2 features fully functional and tested!
+- ✅ OAuth authentication working
+- ✅ Calendar API fetching events
+- ✅ Tasks API with full CRUD operations
+
+**Next Phase:** Build frontend dashboard UI (Phase 3)

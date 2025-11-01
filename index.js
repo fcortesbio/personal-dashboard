@@ -6,6 +6,9 @@ import "./db/database.js"; // imports and run DB set up
 import coursesRouter from "./routes/courses.js";
 import bookmarksRouter from "./routes/bookmarks.js";
 import githubRouter from "./routes/github.js";
+import authRouter from "./routes/auth.js";
+import calendarRouter from "./routes/calendar.js";
+import tasksRouter from "./routes/tasks.js";
 import { swaggerOptions } from "./docs/swaggerConfig.js";
 
 // Generate OpenAPI spec dynamically from JSDoc comments
@@ -18,7 +21,7 @@ const ENV = process.env.ENV ?? "production";
 const isDev = ENV === "development";
 
 // --- Middleware ---
-const morganFormat = isDev ? "combined" : "short";
+const morganFormat = isDev ? "short" : "tiny";
 app.use(morgan(morganFormat)); // Logger
 app.use(express.json()); // JSON body parser for POST/PUT request
 
@@ -34,6 +37,9 @@ app.get("/health", (req, res) => {
 // API Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openAPISpec));
 
+// Authentication endpoints
+app.use("/auth", authRouter);
+
 // Courses CRUD endpoints
 app.use("/courses", coursesRouter);
 
@@ -42,6 +48,12 @@ app.use("/bookmarks", bookmarksRouter);
 
 // GitHub repositories endpoint
 app.use("/github", githubRouter);
+
+// Google Calendar endpoint
+app.use("/calendar", calendarRouter);
+
+// Google Tasks endpoint
+app.use("/tasks", tasksRouter);
 
 // --- Start Server ---
 app.listen(PORT, () => {

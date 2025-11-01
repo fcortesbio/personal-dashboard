@@ -16,7 +16,7 @@ services:
     labels:
       # -- Traefik routing rules --
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard-api.rule=Host(`dashboard`)"
+      - "traefik.http.routers.dashboard-api.rule=Host(`dashboard.localhost`)"
       - "traefik.http.routers.dashboard-api.service=dashboard-api-service"
       - "traefik.http.routers.dashboard-api.entrypoints=web"
       - "traefik.http.services.dashboard-api-service.loadbalancer.server.port=4000"
