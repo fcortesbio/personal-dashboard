@@ -9,16 +9,17 @@ import githubRouter from "./routes/github.js";
 import authRouter from "./routes/auth.js";
 import calendarRouter from "./routes/calendar.js";
 import tasksRouter from "./routes/tasks.js";
-import { swaggerOptions } from "./docs/swaggerConfig.js";
-
-// Generate OpenAPI spec dynamically from JSDoc comments
-const openAPISpec = swaggerJsdoc(swaggerOptions);
+import { getSwaggerOptions } from "./docs/swaggerConfig.js";
 
 // --- App Configuration ---
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 const ENV = process.env.ENV ?? "production";
 const isDev = ENV === "development";
+
+// Generate OpenAPI spec dynamically from JSDoc comments with current PORT
+const swaggerOptions = getSwaggerOptions(PORT);
+const openAPISpec = swaggerJsdoc(swaggerOptions);
 
 // --- Middleware ---
 const morganFormat = isDev ? "short" : "tiny";
@@ -34,7 +35,7 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// API Documentation
+// API Documentation (with dynamic port awareness)
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openAPISpec));
 
 // Authentication endpoints
