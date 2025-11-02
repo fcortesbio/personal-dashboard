@@ -4,8 +4,10 @@ import path from "node:path";
 import fs from "node:fs";
 
 // find the /data directory
+// In Docker: /app/data (mounted from host ./data)
+// In local dev: backend/../data (project root)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbDir = path.join(__dirname, "..", "data");
+const dbDir = process.env.DB_PATH || path.join(__dirname, "..", "..", "data");
 
 // ensure the /data directory exists before trying to create the DB
 if (!fs.existsSync(dbDir)) {

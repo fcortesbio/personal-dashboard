@@ -1,393 +1,70 @@
-# Personal Dashboard API
+# Personal Dashboard
 
-A self-hosted productivity dashboard backend that consolidates key tools and information into a unified API. Built with Node.js/Express.js, SQLite, and comprehensive test coverage.
-
-**Status:** Phase 2 Complete ✅ - Google OAuth, Calendar & Tasks APIs fully integrated and tested.
-
-## Features
-
-### ✅ Phase 1 Complete
-- **Courses API** - Track online courses with current module and links
-- **Bookmarks API** - Manage quick-access links and bookmarks  
-- **GitHub API** - Fetch recent repositories from GitHub
-- **SQLite Database** - Persistent data storage with WAL mode
-- **Test Suite** - 100% isolated test database, comprehensive coverage
-- **OpenAPI Documentation** - Auto-generated Swagger UI at `/api-docs`
-
-### ✅ Phase 2 Complete
-- **Google OAuth 2.0** - Secure authentication flow with automatic token refresh
-- **Token Management** - SQLite token storage with 5-minute expiration buffer
-- **Google Calendar API** - Fetch upcoming events with configurable time range
-- **Google Tasks API** - Full task management (list, create, complete, delete)
-- **Protected Endpoints** - Authentication middleware for all Google API routes
-- **Error Handling** - Comprehensive logging and user-friendly error messages
-
-### 📋 Phase 3 (Planned)  
-- **Frontend** - React/Vue dashboard interface
-- **Dashboard UI** - Visual calendar and task management interface
-
-## Quick Start
-
-### Prerequisites
-- Node.js 18+ (for native `fetch` support)
-- npm or yarn
-- Docker & Docker Compose (for containerized deployment)
-
-### Local Development
-
-```bash
-# Clone the repository
-git clone https://github.com/fcortesbio/personal-dashboard
-cd personal-dashboard
-
-# Install dependencies
-npm install
-
-# Create environment file
-cp .env.example .env
-# Edit .env and add your GitHub/Google OAuth credentials
-
-# Run tests
-npm test
-
-# Start development server
-npm run dev
-```
-
-Development server runs on `http://localhost:3000` (configurable via `PORT` env var)
-
-## API Endpoints
-
-### 📚 Courses
-Manage online course tracking:
-
-- **GET** `/courses` - List all courses
-- **POST** `/courses` - Create a course
-- **GET** `/courses/:id` - Get course by ID
-- **PUT** `/courses/:id` - Update course
-- **DELETE** `/courses/:id` - Delete course
-
-**Example:**
-```json
-{
-  "name": "Amazon Junior Software Developer with GenAI",
-  "current_module": "Exploring conditional statements",
-  "link": "https://coursera.org/learn/..."
-}
-```
-
-### 🔖 Bookmarks
-Manage quick-access links:
-
-- **GET** `/bookmarks` - List all bookmarks
-- **POST** `/bookmarks` - Create a bookmark
-- **GET** `/bookmarks/:id` - Get bookmark by ID
-- **PUT** `/bookmarks/:id` - Update bookmark  
-- **DELETE** `/bookmarks/:id` - Delete bookmark
-
-**Example:**
-```json
-{
-  "name": "GitHub",
-  "link": "https://github.com"
-}
-```
-
-### 🐙 GitHub
-Fetch user repositories:
-
-- **GET** `/github?username=fcortesbio&limit=5` - Get recent repos
-
-**Response:**
-```json
-{
-  "username": "fcortesbio",
-  "profile_url": "https://github.com/fcortesbio",
-  "repositories": [
-    {
-      "name": "personal-dashboard",
-      "description": "Self-hosted productivity dashboard",
-      "url": "https://github.com/fcortesbio/personal-dashboard",
-      "updated_at": "2025-10-30T16:00:00Z",
-      "language": "JavaScript",
-      "stars": 0
-    }
-  ],
-  "fetched_at": "2025-10-30T16:00:00Z"
-}
-```
-
-### 🔐 Google OAuth
-Authentication endpoints for Google Calendar and Tasks integration:
-
-- **GET** `/auth/google/login` - Initiates Google OAuth flow
-- **GET** `/auth/google/callback` - OAuth callback handler (redirect URI)
-- **GET** `/auth/status` - Check current authentication status
-
-### 📅 Google Calendar
-Fetch upcoming calendar events:
-
-- **GET** `/calendar?days=7` - Get upcoming events (default: next 7 days, range: 1-365)
-
-**Response Example:**
-```json
-{
-  "events": [
-    {
-      "id": "event123",
-      "summary": "Team Meeting",
-      "start": "2025-10-30T14:00:00Z",
-      "end": "2025-10-30T15:00:00Z",
-      "description": "Weekly sync",
-      "location": "Conference Room A"
-    }
-  ],
-  "count": 1,
-  "days": 7,
-  "fetched_at": "2025-10-31T09:37:00Z"
-}
-```
-
-### ✅ Google Tasks
-Manage Google Tasks directly from the dashboard:
-
-- **GET** `/tasks` - List all tasks (shows 100 most recent)
-- **POST** `/tasks` - Create a new task
-- **PATCH** `/tasks/:id` - Mark task complete/incomplete
-- **DELETE** `/tasks/:id` - Delete a task
-
-**Create Task Example:**
-```bash
-curl -X POST http://localhost:3000/tasks \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Review pull requests",
-    "notes": "Check pending PRs on dashboard project"
-  }'
-```
-
-**Mark Task Complete:**
-```bash
-curl -X PATCH http://localhost:3000/tasks/:id \
-  -H "Content-Type: application/json" \
-  -d '{"completed": true}'
-```
-
-## API Documentation
-
-**Interactive Swagger UI:** http://localhost:3000/api-docs
-
-**Full API Reference:** See `docs/API.md` for comprehensive endpoint documentation
-
-**Docker Deployment Guide:** See `docs/DOCKER.md`
-
-APIs are auto-generated from JSDoc comments using swagger-jsdoc.
-
-## Environment Variables
-
-```bash
-# Server (optional)
-PORT=3000
-NODE_ENV=development
-
-# GitHub API (optional - for private repos)
-GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxx
-GITHUB_USERNAME=fcortesbio
-
-# Google OAuth 2.0 (Phase 2 - for Calendar/Tasks API)
-GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_client_secret
-GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
-```
-
-**GitHub Token:** Only needed for private repositories. Public repos work without authentication.
-
-**Google OAuth:** Required for Phase 2 features. Set up at [Google Cloud Console](https://console.cloud.google.com/):
-1. Create a new project
-2. Enable Google Calendar API and Google Tasks API
-3. Create OAuth 2.0 credentials (Desktop app type)
-4. Add authorized redirect URI matching `GOOGLE_REDIRECT_URI`
-
-## Testing
-
-**Test Database Isolation:** All tests use in-memory SQLite databases, ensuring production data safety.
-
-```bash
-# Run all tests
-npm test
-
-# Individual test suites
-NODE_ENV=test node tests/courses.test.js
-NODE_ENV=test node tests/bookmarks.test.js  
-node tests/github.test.js
-```
-
-**Test Coverage:**
-- ✅ Courses: 9 tests (CRUD operations, validation)
-- ✅ Bookmarks: 11 tests (CRUD operations, validation)
-- ✅ GitHub: 8 tests (API integration, error handling)
-- ✅ OAuth: Integration tested with actual Google APIs
-- ✅ Calendar: Integration tested with Google Calendar API
-- ✅ Tasks: Full CRUD tested with Google Tasks API
+A full-stack personal dashboard application with a Node.js backend and React frontend.
 
 ## Project Structure
 
 ```
-├── controllers/          # Business logic
-│   ├── courses.js        # Course management
-│   ├── bookmarks.js      # Bookmark management
-│   ├── github.js         # GitHub API integration
-│   ├── auth.js           # Google OAuth 2.0 (Phase 2)
-│   ├── calendar.js       # Google Calendar API (Phase 2)
-│   └── tasks.js          # Google Tasks API (Phase 2)
-├── routes/               # Express route handlers
-│   ├── courses.js        # Course endpoints
-│   ├── bookmarks.js      # Bookmark endpoints
-│   ├── github.js         # GitHub endpoints
-│   ├── auth.js           # OAuth endpoints (Phase 2)
-│   ├── calendar.js       # Calendar endpoints (Phase 2)
-│   └── tasks.js          # Tasks endpoints (Phase 2)
-├── middleware/           # Express middleware
-│   └── auth.js           # Authentication middleware (Phase 2)
-├── db/                   # Database setup
-│   ├── database.js       # Production SQLite setup
-│   └── test-database.js  # Test database factory
-├── tests/                # Test suites
-│   ├── courses.test.js   # Course API tests
-│   ├── bookmarks.test.js # Bookmark API tests
-│   └── github.test.js    # GitHub API tests
-├── docs/                 # API documentation
-│   ├── swaggerConfig.js  # Swagger setup
-│   ├── schemas.js        # OpenAPI schemas
-│   ├── DOCKER.md         # Docker deployment guide
-│   └── API.md            # Phase 2 API reference
-└── data/                 # SQLite database files
+personal-dashboard/
+├── docker-compose.yml       # Orchestration for backend and frontend containers
+├── .gitignore              # Git ignore rules
+├── backend/                # Backend API service (Node.js + Express)
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── index.js
+│   ├── controllers/
+│   ├── routes/
+│   ├── middleware/
+│   ├── db/
+│   └── tests/
+├── frontend/               # Frontend web app (React + Vite)
+│   ├── Dockerfile          # (to be created)
+│   ├── package.json
+│   └── src/
+└── docs/                   # Project documentation
+    ├── README.md           # Detailed documentation
+    ├── WARP.md             # AI assistant guidelines
+    ├── API.md              # API documentation
+    └── ...
 ```
 
-## Database Schema
+## Getting Started
 
-**courses**
-- `id` - PRIMARY KEY
-- `name` - Course name (required)
-- `current_module` - Current module name
-- `link` - Course/module URL
+### Prerequisites
+- Docker and Docker Compose
+- Node.js (for local development)
 
-**bookmarks**  
-- `id` - PRIMARY KEY
-- `name` - Bookmark name (required)
-- `link` - Bookmark URL
+### Running with Docker
 
-**auth_tokens**
-- `id` - PRIMARY KEY
-- `access_token` - Google OAuth access token (auto-refreshed)
-- `refresh_token` - Google OAuth refresh token (persisted)
-- `expires_at` - Token expiration timestamp (milliseconds)
-- `created_at` - Token creation timestamp
-
-## Development
-
-### Code Style
-- ES6 modules (`import/export`)
-- JSDoc comments for OpenAPI generation
-- Consistent error handling
-- Test-driven development (TDD)
-
-### Git Workflow  
-Following conventional commits:
-- `feat:` - New features
-- `fix:` - Bug fixes
-- `docs:` - Documentation changes
-- `test:` - Test additions/changes
-- `refactor:` - Code refactoring
-
-### Branching Strategy
-- `main` - Production ready code
-- `feature/*` - New features (squash merge to main)
-- Never commit directly to main
-
-## Deployment
-
-### Docker with Traefik
-
-This project is configured to run with Docker and Traefik as a reverse proxy.
-
-#### Prerequisites
-- Docker and Docker Compose installed
-- Traefik container running on the `traefik_proxy` network
-- `/etc/hosts` configured with the dashboard hostname
-
-#### Setup Instructions
-
-1. **Configure `/etc/hosts`** to resolve the dashboard hostname (optional for Traefik):
-   ```bash
-   # Add this line to /etc/hosts (optional - Traefik handles dashboard.localhost)
-   127.0.0.1 dashboard.localhost
-   ```
-   On Linux/macOS, edit with: `sudo nano /etc/hosts`
-   
-   Note: Traefik can resolve `dashboard.localhost` without `/etc/hosts` configuration
-
-2. **Create production environment file:**
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your GitHub/Google OAuth credentials
-   ```
-
-3. **Start the container:**
-   ```bash
-   docker compose up -d
-   ```
-
-4. **Access the API:**
-   - Direct access: `http://localhost:3000/health`
-   - Via Traefik: `http://dashboard.localhost/health`
-   - API Documentation: `http://dashboard.localhost/api-docs`
-
-#### Configuration
-- The container exposes port 3000 (configurable via `.env` PORT variable)
-- Traefik routes all traffic from `http://dashboard/` to the backend
-- Data persists in `./data/` volume
-- Logs are accessible via: `docker compose logs -f dashboard_backend`
-
-#### Useful Commands
 ```bash
-# View logs
-docker compose logs -f dashboard_backend
-
-# Stop containers
-docker compose down
-
-# Rebuild after code changes
-docker compose up -d --build
-
-# Remove volumes (clears database)
-docker compose down -v
+docker-compose up
 ```
 
-### Manual Deployment
+The backend will be available at `http://localhost:4000` (or via Traefik at `dashboard.localhost`).
+
+### Local Development
+
+**Backend:**
 ```bash
-# Production build
-NODE_ENV=production npm start
+cd backend
+npm install
+npm run dev
 ```
 
-## Contributing
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Write tests for new functionality
-4. Commit changes (`git commit -m 'feat: add amazing feature'`)
-5. Push to branch (`git push origin feature/amazing-feature`)
-6. Open Pull Request
+## Documentation
+
+See the `docs/` directory for detailed documentation:
+- [Full Project Documentation](docs/README.md)
+- [API Documentation](docs/API.md)
+- [Docker Setup](docs/DOCKER.md)
 
 ## License
 
-MIT License - see LICENSE file for details.
-
----
-
-**Current Status:** All Phase 2 features fully functional and tested!
-- ✅ OAuth authentication working
-- ✅ Calendar API fetching events
-- ✅ Tasks API with full CRUD operations
-
-**Next Phase:** Build frontend dashboard UI (Phase 3)
+Private project.

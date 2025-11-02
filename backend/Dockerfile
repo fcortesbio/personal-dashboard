@@ -32,6 +32,9 @@ COPY --from=builder /app ./
 # Create the directory for the persistent database
 RUN mkdir -p /app/data
 
+# Set database path for Docker environment
+ENV DB_PATH=/app/data
+
 # Expose the port your app runs on (production)
 EXPOSE 4000
 

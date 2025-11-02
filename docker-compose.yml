@@ -1,6 +1,6 @@
 services:
   backend:
-    build: .
+    build: ./backend
     container_name: "dashboard_backend"
     restart: unless-stopped
     networks:
@@ -12,14 +12,30 @@ services:
       # ensures data persistance -- it links local ./data to /app/data in the container
       - ./data:/app/data
     env_file:
-      - .env
+      - backend/.env
     labels:
       # -- Traefik routing rules --
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard-api.rule=Host(`dashboard.localhost`)"
+      - "traefik.http.routers.dashboard-api.rule=Host(`dashboard.localhost`) && PathPrefix(`/api`)"
       - "traefik.http.routers.dashboard-api.service=dashboard-api-service"
       - "traefik.http.routers.dashboard-api.entrypoints=web"
       - "traefik.http.services.dashboard-api-service.loadbalancer.server.port=4000"
+
+  frontend:
+    build: ./frontend
+    container_name: "dashboard_frontend"
+    restart: unless-stopped
+    networks:
+      - traefik_proxy
+    ports:
+      - "3000:80"
+    labels:
+      # -- Traefik routing rules --
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard-frontend.rule=Host(`dashboard.localhost`)"
+      - "traefik.http.routers.dashboard-frontend.service=dashboard-frontend-service"
+      - "traefik.http.routers.dashboard-frontend.entrypoints=web"
+      - "traefik.http.services.dashboard-frontend-service.loadbalancer.server.port=80"
 
 networks:
   traefik_proxy:
