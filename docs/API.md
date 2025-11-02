@@ -421,6 +421,369 @@ curl "http://localhost:3001/github?username=fcortesbio&limit=10"
 
 ---
 
+## Google OAuth
+
+Secure authentication flow for accessing Google Calendar and Tasks APIs.
+
+### Initiate Login
+
+Start the Google OAuth authentication flow.
+
+**Endpoint**: `GET /auth/google/login`
+
+**Response** (`302 Found`): Redirects to Google OAuth consent screen
+
+**Error** (`500 Internal Server Error`):
+```json
+{
+  "error": "Failed to initiate login",
+  "details": "Failed to generate authorization URL. Check your Google OAuth credentials"
+}
+```
+
+**Example**:
+```bash
+curl -L http://localhost:3001/auth/google/login
+```
+
+---
+
+### OAuth Callback
+
+Callback endpoint for Google OAuth. Automatically handles token exchange.
+
+**Endpoint**: `GET /auth/google/callback`
+
+**Query Parameters**:
+- `code` (string, conditional): Authorization code from Google (present if user consented)
+- `error` (string, conditional): Error code if user denied consent (e.g., "access_denied")
+
+**Response** (`200 OK`):
+```json
+{
+  "success": true,
+  "message": "Authentication successful! Your dashboard is now connected to Google Calendar and Tasks."
+}
+```
+
+**Error** (`400 Bad Request`) - Missing code or user denied:
+```json
+{
+  "error": "Missing authorization code",
+  "message": "No code received from Google"
+}
+```
+
+**Error** (`500 Internal Server Error`):
+```json
+{
+  "error": "Authentication failed",
+  "details": "Failed to authenticate with Google"
+}
+```
+
+---
+
+### Check Authentication Status
+
+Check current authentication status without requiring a login.
+
+**Endpoint**: `GET /auth/status`
+
+**Response** (`200 OK`) - Authenticated:
+```json
+{
+  "authenticated": true,
+  "message": "You are authenticated"
+}
+```
+
+**Response** (`401 Unauthorized`) - Not authenticated:
+```json
+{
+  "authenticated": false,
+  "loginUrl": "https://accounts.google.com/o/oauth2/v2/auth?...",
+  "message": "Not authenticated. Please log in."
+}
+```
+
+**Example**:
+```bash
+curl http://localhost:3001/auth/status
+```
+
+---
+
+## Google Calendar
+
+Fetch and manage upcoming calendar events.
+
+### Get Upcoming Events
+
+Retrieve upcoming calendar events for a specified number of days.
+
+**Endpoint**: `GET /calendar`
+
+**Authentication**: Required (OAuth token must be valid)
+
+**Query Parameters**:
+- `days` (integer, optional): Number of days to fetch events for (1-365, default: 7)
+
+**Response** (`200 OK`):
+```json
+{
+  "events": [
+    {
+      "id": "event-id-123",
+      "summary": "Team Meeting",
+      "description": "Weekly sync with the team",
+      "start": {
+        "dateTime": "2025-11-05T10:00:00Z",
+        "timeZone": "America/Los_Angeles"
+      },
+      "end": {
+        "dateTime": "2025-11-05T11:00:00Z",
+        "timeZone": "America/Los_Angeles"
+      },
+      "location": "Conference Room A",
+      "attendees": [
+        {
+          "email": "user@example.com",
+          "displayName": "User Name",
+          "responseStatus": "accepted"
+        }
+      ],
+      "htmlLink": "https://www.google.com/calendar/event?eid=..."
+    }
+  ],
+  "count": 1,
+  "days": 7,
+  "fetched_at": "2025-11-02T12:34:56Z"
+}
+```
+
+**Error** (`400 Bad Request`) - Invalid days parameter:
+```json
+{
+  "error": "Invalid days parameter",
+  "message": "Days must be between 1 and 365"
+}
+```
+
+**Error** (`401 Unauthorized`) - Not authenticated:
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+**Example**:
+```bash
+# Get next 7 days of events (default)
+curl http://localhost:3001/calendar
+
+# Get next 14 days of events
+curl "http://localhost:3001/calendar?days=14"
+```
+
+---
+
+## Google Tasks
+
+Manage tasks from Google Tasks directly via API.
+
+### List All Tasks
+
+Retrieve all pending and completed tasks.
+
+**Endpoint**: `GET /tasks`
+
+**Authentication**: Required (OAuth token must be valid)
+
+**Response** (`200 OK`):
+```json
+{
+  "tasks": [
+    {
+      "id": "task-id-123",
+      "title": "Complete project proposal",
+      "notes": "Send to team lead for review",
+      "status": "needsAction",
+      "due": "2025-11-15T00:00:00Z",
+      "completed": null
+    },
+    {
+      "id": "task-id-456",
+      "title": "Review pull requests",
+      "notes": null,
+      "status": "completed",
+      "due": null,
+      "completed": "2025-11-01T15:30:00Z"
+    }
+  ],
+  "count": 2,
+  "fetched_at": "2025-11-02T12:34:56Z"
+}
+```
+
+**Error** (`401 Unauthorized`):
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+**Example**:
+```bash
+curl http://localhost:3001/tasks
+```
+
+---
+
+### Create a Task
+
+Create a new task in Google Tasks.
+
+**Endpoint**: `POST /tasks`
+
+**Authentication**: Required (OAuth token must be valid)
+
+**Request Body**:
+```json
+{
+  "title": "Complete project proposal",
+  "notes": "Send to team lead for review",
+  "dueDate": "2025-11-15"
+}
+```
+
+**Response** (`201 Created`):
+```json
+{
+  "success": true,
+  "task": {
+    "id": "task-id-789",
+    "title": "Complete project proposal",
+    "notes": "Send to team lead for review",
+    "status": "needsAction",
+    "due": "2025-11-15T00:00:00Z",
+    "completed": null
+  },
+  "message": "Task created successfully"
+}
+```
+
+**Error** (`400 Bad Request`) - Missing title:
+```json
+{
+  "error": "Missing required field",
+  "message": "title is required"
+}
+```
+
+**Example**:
+```bash
+curl -X POST http://localhost:3001/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Complete project proposal",
+    "notes": "Send to team lead for review",
+    "dueDate": "2025-11-15"
+  }'
+```
+
+---
+
+### Mark Task Complete/Incomplete
+
+Update a task's completion status.
+
+**Endpoint**: `PATCH /tasks/{id}`
+
+**Authentication**: Required (OAuth token must be valid)
+
+**Parameters**:
+- `id` (path, string, required): Task ID
+
+**Request Body**:
+```json
+{
+  "completed": true
+}
+```
+
+**Response** (`200 OK`):
+```json
+{
+  "success": true,
+  "task": {
+    "id": "task-id-123",
+    "title": "Complete project proposal",
+    "notes": "Send to team lead for review",
+    "status": "completed",
+    "due": "2025-11-15T00:00:00Z",
+    "completed": "2025-11-02T12:34:56Z"
+  },
+  "message": "Task marked as completed"
+}
+```
+
+**Error** (`400 Bad Request`) - Missing completed field:
+```json
+{
+  "error": "Missing required field",
+  "message": "completed is required"
+}
+```
+
+**Example**:
+```bash
+# Mark task as complete
+curl -X PATCH http://localhost:3001/tasks/task-id-123 \
+  -H "Content-Type: application/json" \
+  -d '{"completed": true}'
+
+# Mark task as incomplete
+curl -X PATCH http://localhost:3001/tasks/task-id-123 \
+  -H "Content-Type: application/json" \
+  -d '{"completed": false}'
+```
+
+---
+
+### Delete a Task
+
+Delete a task from Google Tasks.
+
+**Endpoint**: `DELETE /tasks/{id}`
+
+**Authentication**: Required (OAuth token must be valid)
+
+**Parameters**:
+- `id` (path, string, required): Task ID
+
+**Response** (`200 OK`):
+```json
+{
+  "success": true,
+  "message": "Task deleted successfully"
+}
+```
+
+**Error** (`401 Unauthorized`):
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+**Example**:
+```bash
+curl -X DELETE http://localhost:3001/tasks/task-id-123
+```
+
+---
+
 ## Error Responses
 
 All endpoints follow a consistent error response format:
