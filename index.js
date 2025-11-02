@@ -23,7 +23,13 @@ const openAPISpec = swaggerJsdoc(swaggerOptions);
 
 // --- Middleware ---
 const morganFormat = isDev ? "short" : "tiny";
-app.use(morgan(morganFormat)); // Logger
+
+// Skip favicon and other static file requests from logs
+const morganOptions = {
+  skip: (req) => req.url === "/favicon.ico",
+};
+
+app.use(morgan(morganFormat, morganOptions)); // Logger (skips favicon requests)
 app.use(express.json()); // JSON body parser for POST/PUT request
 
 // --- API Routes ---
