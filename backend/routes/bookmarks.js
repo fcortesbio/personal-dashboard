@@ -1,5 +1,4 @@
 import express from "express";
-
 import {
   createBookmark,
   getBookmark,
@@ -7,6 +6,7 @@ import {
   updateBookmark,
   deleteBookmark,
 } from "../controllers/bookmarks.js";
+import { validate, schemas } from "../middleware/validation.js";
 
 const router = express.Router();
 
@@ -34,7 +34,7 @@ const router = express.Router();
  *       201:
  *         description: Bookmark created successfully
  */
-router.post("/", (req, res) => {
+router.post("/", validate(schemas.createBookmark), (req, res) => {
   try {
     const bookmark = createBookmark(req.body);
     res.status(201).json(bookmark);
@@ -118,7 +118,7 @@ router.get("/:id", (req, res) => {
  *       404:
  *         description: Bookmark not found
  */
-router.put("/:id", (req, res) => {
+router.put("/:id", validate(schemas.updateBookmark), (req, res) => {
   try {
     const bookmark = updateBookmark(parseInt(req.params.id), req.body);
     if (!bookmark) {

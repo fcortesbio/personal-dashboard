@@ -6,6 +6,7 @@ import {
   updateCourse,
   deleteCourse,
 } from "../controllers/courses.js";
+import { validate, schemas } from "../middleware/validation.js";
 
 const router = express.Router();
 
@@ -42,7 +43,7 @@ const router = express.Router();
  *       400:
  *         description: Missing required field (name)
  */
-router.post("/", (req, res) => {
+router.post("/", validate(schemas.createCourse), (req, res) => {
   try {
     const course = createCourse(req.body);
     res.status(201).json(course);
@@ -145,7 +146,7 @@ router.get("/:id", (req, res) => {
  *       404:
  *         description: Course not found
  */
-router.put("/:id", (req, res) => {
+router.put("/:id", validate(schemas.updateCourse), (req, res) => {
   try {
     const course = updateCourse(parseInt(req.params.id), req.body);
     if (!course) {
