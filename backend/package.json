@@ -26,7 +26,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node index.js --env-file=.env",
     "dev": "nodemon --exec 'node --env-file=.env.dev' index.js",
     "dev:watch": "nodemon --exec 'node --env-file=.env.dev' index.js --watch index.js",
     "lint": "eslint . --fix",
