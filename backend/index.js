@@ -12,6 +12,10 @@ import authRouter from "./routes/auth.js";
 import calendarRouter from "./routes/calendar.js";
 import tasksRouter from "./routes/tasks.js";
 import { getSwaggerOptions } from "./docs/swaggerConfig.js";
+import {
+  errorHandler,
+  notFoundHandler,
+} from "./middleware/errorHandler.js";
 
 /**
  * Checks for all required environment variables.
@@ -112,7 +116,14 @@ const startServer = () => {
     app.use("/calendar", calendarRouter);
     app.use("/tasks", tasksRouter);
 
-    // --- 5. Start Server ---
+    // --- 5. Error Handling ---
+    // 404 handler (must be after all routes)
+    app.use(notFoundHandler);
+
+    // Global error handler (must be last)
+    app.use(errorHandler);
+
+    // --- 6. Start Server ---
     const server = app.listen(PORT, () => {
       const mode = isDev ? "DEVELOPMENT" : "PRODUCTION";
       console.log(
