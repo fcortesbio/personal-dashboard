@@ -88,11 +88,23 @@ const startServer = () => {
     app.use("/tasks", tasksRouter);
 
     // --- 5. Start Server ---
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       const mode = isDev ? "DEVELOPMENT" : "PRODUCTION";
       console.log(
         `[${mode}] Backend server running on http://localhost:${PORT}`
       );
+    });
+
+    // Handle port already in use errors
+    server.on("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.error(
+          `❌ Port ${PORT} is already in use. Please free the port or change PORT in your .env file.`
+        );
+      } else {
+        console.error("❌ Server error:", err.message);
+      }
+      process.exit(1);
     });
   } catch (error) {
     // --- Catch errors (like missing ENV vars) ---
