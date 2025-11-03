@@ -214,4 +214,66 @@ router.get("/status", (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout and Clear Authentication
+ *     description: Deletes stored authentication tokens and destroys the session
+ *     tags: [Google OAuth]
+ *     responses:
+ *       200:
+ *         description: Successfully logged out
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Logged out successfully
+ *       500:
+ *         description: Error during logout
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Logout failed
+ */
+router.post("/logout", async (req, res) => {
+  try {
+    // Import db dynamically to avoid circular dependencies
+    const { default: db } = await import("../db/database.js");
+    
+    // Delete all tokens from database
+    db.prepare("DELETE FROM auth_tokens").run();
+    
+    // Destroy session if it exists
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error destroying session:", err);
+        }
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("Error during logout:", error);
+    res.status(500).json({
+      error: "Logout failed",
+      details: error.message,
+    });
+  }
+});
+
 export default router;
