@@ -1,4 +1,5 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import {
   generateAuthUrl,
   handleAuthCallback,
@@ -6,6 +7,18 @@ import {
 } from "../controllers/auth.js";
 
 const router = express.Router();
+
+// Rate limiter for OAuth endpoints (10 requests per 15 minutes)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per window
+  message: {
+    error: "Too many authentication attempts",
+    message: "Please try again later",
+  },
+  standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
+  legacyHeaders: false, // Disable `X-RateLimit-*` headers
+});
 
 /**
  * @swagger
@@ -37,7 +50,7 @@ const router = express.Router();
  *                   type: string
  *                   example: Failed to generate authorization URL. Check your Google OAuth credentials
  */
-router.get("/google/login", (req, res) => {
+router.get("/google/login", authLimiter, (req, res) => {
   try {
     const authUrl = generateAuthUrl();
     // Redirect to Google's OAuth consent screen
@@ -112,7 +125,7 @@ router.get("/google/login", (req, res) => {
  *                   type: string
  *                   example: Failed to authenticate with Google
  */
-router.get("/google/callback", async (req, res) => {
+router.get("/google/callback", authLimiter, async (req, res) => {
   const { code, error } = req.query;
 
   if (error) {
