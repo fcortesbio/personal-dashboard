@@ -2,7 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
-import "./db/database.js"; // imports and run DB set up
+import "./db/database.js";
 import coursesRouter from "./routes/courses.js";
 import bookmarksRouter from "./routes/bookmarks.js";
 import githubRouter from "./routes/github.js";
@@ -11,59 +11,96 @@ import calendarRouter from "./routes/calendar.js";
 import tasksRouter from "./routes/tasks.js";
 import { getSwaggerOptions } from "./docs/swaggerConfig.js";
 
-// --- App Configuration ---
-const app = express();
-const PORT = process.env.PORT ?? 3000;
-const ENV = process.env.ENV ?? "production";
-const isDev = ENV === "development";
+/**
+ * Checks for all required environment variables.
+ * If any are missing, it throws an error to prevent server startup.
+ */
+const validateEnvVariables = () => {
+  // Add ALL variables you expect from your .env file
+  const requiredEnvVars = [
+    "PORT", // Now required
+    "ENV", // Now required
+    "GITHUB_TOKEN",
+    "GITHUB_USERNAME",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GOOGLE_REDIRECT_URI",
+  ];
 
-// Generate OpenAPI spec dynamically from JSDoc comments with current PORT
-const swaggerOptions = getSwaggerOptions(PORT);
-const openAPISpec = swaggerJsdoc(swaggerOptions);
+  const missingVars = requiredEnvVars.filter(
+    (varName) => !process.env[varName]
+  );
 
-// --- Middleware ---
-const morganFormat = isDev ? "short" : "tiny";
+  if (missingVars.length > 0) {
+    throw new Error(
+      `[ENV ERROR] Missing required environment variables: ${missingVars.join(
+        ", "
+      )}. Server startup aborted.`
+    );
+  }
 
-// Skip favicon and other static file requests from logs
-const morganOptions = {
-  skip: (req) => req.url === "/favicon.ico",
+  console.log("[ENV] All required environment variables are loaded.");
 };
 
-app.use(morgan(morganFormat, morganOptions)); // Logger (skips favicon requests)
-app.use(express.json()); // JSON body parser for POST/PUT request
+/**
+ * Main function to initialize and start the server.
+ */
+const startServer = () => {
+  try {
+    // --- 1. Validate Environment Variables ---
+    // This will NOW fail if PORT or ENV are not loaded
+    validateEnvVariables();
 
-// --- API Routes ---
-app.get("/", (req, res) => {
-  res.json({ message: "Hello from Dashboard Backend!" });
-});
+    // --- 2. App Configuration ---
+    // We can now safely access these without defaults,
+    // because validation would have failed already if they were missing.
+    const app = express();
+    const PORT = process.env.PORT;
+    const ENV = process.env.ENV;
+    const isDev = ENV === "development";
 
-app.get("/health", (req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
-});
+    const swaggerOptions = getSwaggerOptions(PORT);
+    const openAPISpec = swaggerJsdoc(swaggerOptions);
 
-// API Documentation (with dynamic port awareness)
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openAPISpec));
+    // --- 3. Middleware ---
+    const morganFormat = isDev ? "short" : "tiny";
+    const morganOptions = {
+      skip: (req) => req.url === "/favicon.ico",
+    };
+    app.use(morgan(morganFormat, morganOptions));
+    app.use(express.json());
 
-// Authentication endpoints
-app.use("/auth", authRouter);
+    // --- 4. API Routes ---
+    app.get("/", (req, res) => {
+      res.json({ message: "Hello from Dashboard Backend!" });
+    });
 
-// Courses CRUD endpoints
-app.use("/courses", coursesRouter);
+    app.get("/health", (req, res) => {
+      res.json({ status: "ok", timestamp: new Date().toISOString() });
+    });
 
-// Bookmarks CRUD endpoints
-app.use("/bookmarks", bookmarksRouter);
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openAPISpec));
+    app.use("/auth", authRouter);
+    app.use("/courses", coursesRouter);
+    app.use("/bookmarks", bookmarksRouter);
+    app.use("/github", githubRouter);
+    app.use("/calendar", calendarRouter);
+    app.use("/tasks", tasksRouter);
 
-// GitHub repositories endpoint
-app.use("/github", githubRouter);
+    // --- 5. Start Server ---
+    app.listen(PORT, () => {
+      const mode = isDev ? "DEVELOPMENT" : "PRODUCTION";
+      console.log(
+        `[${mode}] Backend server running on http://localhost:${PORT}`
+      );
+    });
+  } catch (error) {
+    // --- Catch errors (like missing ENV vars) ---
+    console.error("❌ Failed to start server:");
+    console.error(error.message); // This will show you exactly what's missing
+    process.exit(1);
+  }
+};
 
-// Google Calendar endpoint
-app.use("/calendar", calendarRouter);
-
-// Google Tasks endpoint
-app.use("/tasks", tasksRouter);
-
-// --- Start Server ---
-app.listen(PORT, () => {
-  const mode = isDev ? "DEVELOPMENT" : "PRODUCTION";
-  console.log(`[${mode}] Backend server running on http://localhost:${PORT}`);
-});
+// --- Run the server ---
+startServer();
