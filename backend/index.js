@@ -1,5 +1,7 @@
 import express from "express";
 import morgan from "morgan";
+import cors from "cors";
+import session from "express-session";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 import "./db/database.js";
@@ -63,6 +65,29 @@ const startServer = () => {
     const openAPISpec = swaggerJsdoc(swaggerOptions);
 
     // --- 3. Middleware ---
+    // CORS configuration
+    app.use(
+      cors({
+        origin: process.env.FRONTEND_URL || "http://localhost:5173",
+        credentials: true,
+      })
+    );
+
+    // Session configuration
+    app.use(
+      session({
+        secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+          secure: !isDev, // Use secure cookies in production (HTTPS)
+          httpOnly: true,
+          maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        },
+      })
+    );
+
+    // HTTP request logging
     const morganFormat = isDev ? "short" : "tiny";
     const morganOptions = {
       skip: (req) => req.url === "/favicon.ico",

@@ -34,8 +34,10 @@
   },
   "dependencies": {
     "better-sqlite3": "^11.10.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "express-session": "^1.18.2",
     "google-auth-library": "^9.14.1",
     "googleapis": "^164.1.0",
     "morgan": "^1.10.1",
